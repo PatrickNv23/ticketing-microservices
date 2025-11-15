@@ -1,0 +1,32 @@
+version: "3.4"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"] # configuracion para que trabaje como cluster pero no es cluster
+    ports:
+      - 27017:27017 # puerto del host : puerto del container
+    extra_hosts:
+      - "host.docker.internal:host-gateway" #indicarle que se trata de un cluster
+    healthcheck: # configuraciones que verifican si el servicio está funcionando bien
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    volumes:
+      - mongodb_data:/data/db # donde almacene la data del servidor container que se va a crear
+      - mongodb_config:/data/configdb
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+# es una network cerrada para que se comunique los containers de docker
+networks:
+  default:
+    name: microserviceNetwork
+# ejecutar es: docker compose up -d
