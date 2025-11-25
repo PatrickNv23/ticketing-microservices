@@ -10,7 +10,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "username" : "PatrickNavarro1",
-  "typeError" : "ErrorSystem",
-  "detailError" : "The store is closed"
+  "username" : "PatrickNavarro2",
+  "typeError" : "ErrorDesktop",
+  "detailError" : "The keyboard is failed"
 }

@@ -9,11 +9,21 @@ using Ticketing.Command.Features.Apis;
 
 namespace Ticketing.Command.Features.Tickets;
 
-public class TicketCreate : IMinimalApi
+public sealed class TicketCreate : IMinimalApi // sealed es que no permita herencia
 {
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        throw new NotImplementedException();
+        endpointRouteBuilder.MapPost("/api/ticket", async (
+            TicketCreateRequest ticketCreateRequest,
+            IMediator mediator,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var id = Guid.CreateVersion7(DateTimeOffset.UtcNow).ToString();
+            var command = new TicketCreateCommand(id, ticketCreateRequest);
+            var result = await mediator.Send(command, cancellationToken);
+            return Results.Ok(result);
+        });
     }
     
     public sealed class TicketCreateRequest(string userName, string typeError, string detailError)
@@ -23,7 +33,7 @@ public class TicketCreate : IMinimalApi
         public string DetailError { get; set; } = detailError;
     }
     
-    public record TicketCreateCommand(TicketCreateRequest ticketCreateRequest) 
+    public record TicketCreateCommand(string Id, TicketCreateRequest ticketCreateRequest) 
         : IRequest<bool>;
 
     public class TicketCreateCommandValidator : AbstractValidator<TicketCreateCommand>
@@ -31,6 +41,7 @@ public class TicketCreate : IMinimalApi
         public TicketCreateCommandValidator()
         {
             RuleFor(x => x.ticketCreateRequest).SetValidator(new TicketCreateRequestValidator());
+            RuleFor(x => x.Id).NotEmpty().WithMessage("The event id is required");
         }
     }
 
