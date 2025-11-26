@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Ticketing.Command.Application.Models;
@@ -57,5 +58,15 @@ public class MongoRepository<TDocument>(IMongoClient mongoClient, IOptions<Mongo
         CancellationToken cancellationToken = default)
     {
         await _collection.InsertOneAsync(clientSessionHandle, document, null, cancellationToken);
+    }
+
+    public async Task<IEnumerable<TDocument>> FilterByAsync(
+        Expression<Func<TDocument, bool>> filterExpression, 
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _collection.FindAsync(filterExpression, null, cancellationToken);
+        var resultList = await result.ToListAsync();
+        
+        return resultList.Any() ? resultList : Enumerable.Empty<TDocument>();
     }
 }

@@ -7,6 +7,7 @@ namespace Ticketing.Command.Application.Aggregates;
 public class TicketAggregate : AggregateRoot
 {
     public bool Active { get; set; }
+    public TicketAggregate(){}
     public TicketAggregate(TicketCreateCommand command)
     {
         var ticketCreatedEvent = new TicketCreatedEvent

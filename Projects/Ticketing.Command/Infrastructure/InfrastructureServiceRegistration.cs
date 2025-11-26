@@ -1,7 +1,10 @@
 using Common.Core.Events;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using Ticketing.Command.Application.Aggregates;
 using Ticketing.Command.Domain.Abstracts;
+using Ticketing.Command.Infrastructure.EventSourcings;
+using Ticketing.Command.Infrastructure.Persistence;
 using Ticketing.Command.Infrastructure.Repositories;
 
 namespace Ticketing.Command.Infrastructure;
@@ -19,6 +22,9 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton<IMongoClient, MongoClient>(sp =>
             new MongoClient(configuration.GetConnectionString("MongoDb"))
         );
+        
+        services.AddTransient<IEventStore, EventStore>();
+        services.AddTransient<IEventSourcingHandler<TicketAggregate>, TicketingEventSourcingHandler>();
 
         return services;
     }

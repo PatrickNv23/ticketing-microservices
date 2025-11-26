@@ -1,10 +1,7 @@
-using AutoMapper;
-using Common.Core.Events;
 using FluentValidation;
 using MediatR;
-using MongoDB.Driver;
+using Ticketing.Command.Application.Aggregates;
 using Ticketing.Command.Domain.Abstracts;
-using Ticketing.Command.Domain.EventModels;
 using Ticketing.Command.Features.Apis;
 
 namespace Ticketing.Command.Features.Tickets;
@@ -26,10 +23,10 @@ public sealed class TicketCreate : IMinimalApi // sealed es que no permita heren
         });
     }
     
-    public sealed class TicketCreateRequest(string userName, string typeError, string detailError)
+    public sealed class TicketCreateRequest(string userName, int typeError, string detailError)
     {
         public string UserName { get; set; } = userName;
-        public string TypeError { get; set; } = typeError;
+        public int TypeError { get; set; } = typeError;
         public string DetailError { get; set; } = detailError;
     }
     
@@ -49,46 +46,25 @@ public sealed class TicketCreate : IMinimalApi // sealed es que no permita heren
     {
         public TicketCreateRequestValidator()
         {
-            RuleFor(x => x.UserName).NotEmpty().WithMessage("El nombre de usuario es obligatorio");
+            RuleFor(x => x.UserName)
+                .NotEmpty().WithMessage("El nombre de usuario es obligatorio")
+                .EmailAddress().WithMessage("Debe ser un email");
+            RuleFor(x => x.TypeError)
+                .NotEmpty().WithMessage("El tipo de error es obligatorio")
+                .InclusiveBetween(1,5).WithMessage("El rango de error es de 1 a 5");
             RuleFor(x => x.DetailError).NotEmpty().WithMessage("El detalle de error es obligatorio");
         }
     }
 
     public sealed class TicketCreateCommandHandler(
-        IEventModelRepository eventModelRepository,
-        IMapper mapper
+        IEventSourcingHandler<TicketAggregate> eventSourcingHandler
         ) : IRequestHandler<TicketCreateCommand, bool>
     {
         public async Task<bool> Handle(TicketCreateCommand request, CancellationToken cancellationToken)
         {
-            var ticketEventData = mapper.Map<TicketCreatedEvent>(request.ticketCreateRequest);
-
-            var eventModel = new EventModel
-            {
-                Timestamp = DateTime.UtcNow,
-                AggregateIdentifier = Guid.CreateVersion7(DateTimeOffset.UtcNow).ToString(),
-                AggregateType = "TicketAggregate",
-                Version = 1,
-                EventType = "TicketCreatedEvent",
-                EventData = ticketEventData
-            };
-            
-            var session = await eventModelRepository.BeginSessionAsync(cancellationToken);
-            
-            try
-            {
-                eventModelRepository.BeginTransaction(session);
-                await eventModelRepository.InsertOneAsync(eventModel, session, cancellationToken);
-                await eventModelRepository.CommitTransactionAsync(session, cancellationToken);
-                eventModelRepository.DisposeSession(session);
-                return true;
-            }
-            catch (Exception e)
-            {
-                await eventModelRepository.RollbackTransactionAsync(session, cancellationToken);
-                eventModelRepository.DisposeSession(session);
-                return false;
-            }
+            var aggregate = new TicketAggregate(request);
+            await eventSourcingHandler.SaveAsync(aggregate, cancellationToken);
+            return true;
         }
     }
 }
