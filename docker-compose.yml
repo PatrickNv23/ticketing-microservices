@@ -19,10 +19,62 @@ services:
     volumes:
       - mongodb_data:/data/db # donde almacene la data del servidor container que se va a crear
       - mongodb_config:/data/configdb
+
+  zookeeper:
+    image: zookeeper:3.9.1
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/data
+      - zookeeper_log:/datalog
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    restart: always
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    environment:
+      # Variables de entorno para la imagen de Confluent
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://:9092, EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092, EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT, EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_AUTO_CREATE_TOPIC_ENABLE: "true"
+    depends_on:
+      - zookeeper
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+
 volumes:
   mongodb_data:
     driver: local
   mongodb_config:
+    driver: local
+  zookeeper_data:
+    driver: local
+  zookeeper_log:
+    driver: local
+  kafka_data:
     driver: local
 
 # es una network cerrada para que se comunique los containers de docker
