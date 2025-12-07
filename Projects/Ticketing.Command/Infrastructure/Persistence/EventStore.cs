@@ -1,12 +1,16 @@
 using Common.Core.Events;
+using Common.Core.Producers;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Ticketing.Command.Application.Models;
 using Ticketing.Command.Domain.Abstracts;
 using Ticketing.Command.Domain.EventModels;
 
 namespace Ticketing.Command.Infrastructure.Persistence;
 
-public class EventStore(IEventModelRepository eventModelRepository) : IEventStore 
+public class EventStore(IEventModelRepository eventModelRepository, IOptions<KafkaSettings> kafkaSettings, IEventProducer eventProducer) : IEventStore 
 {
+    private readonly KafkaSettings _kafkaSettings = kafkaSettings.Value;
     public async Task<List<BaseEvent>> GetEventsAsync(string aggregateId, CancellationToken cancellationToken)
     {
         var eventStream = await eventModelRepository
@@ -45,7 +49,12 @@ public class EventStore(IEventModelRepository eventModelRepository) : IEventStor
                 EventType = eventType,
                 EventData = @event
             };
+            // enviar evento a mongoDB
             await AddEventStore(eventModel, cancellationToken);
+            
+            // enviar evento a kafka
+            var topic = _kafkaSettings.Topic ?? throw new Exception("No encontró el topi");
+            await eventProducer.ProduceAsync(topic, @event);
         }
     }
 

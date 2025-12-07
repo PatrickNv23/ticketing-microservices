@@ -9,6 +9,7 @@ public static class ApplicationServiceRegistration
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<MongoSettings>(configuration.GetSection(nameof(MongoSettings)));
+        services.Configure<KafkaSettings>(configuration.GetSection(nameof(KafkaSettings)));
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(ApplicationServiceRegistration).Assembly);
