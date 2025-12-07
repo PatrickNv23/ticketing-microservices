@@ -1,6 +1,6 @@
-@Ticketing.Query_HostAddress = http://localhost:5062
+@Ticketing_Query_HostAddress = http://localhost:5269
 
-GET {{Ticketing.Query_HostAddress}}/weatherforecast/
+GET {{ Ticketing_Query_HostAddress }}/weatherforecast/
 Accept: application/json
 
 ###
