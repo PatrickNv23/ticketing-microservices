@@ -1,3 +1,4 @@
+using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Ticketing.Query.Domain.Abstractions;
 using Ticketing.Query.Infrastructure.Persistence;
@@ -31,6 +32,8 @@ public static class InfrastructureServiceRegistration
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        
+        services.Configure<ConsumerConfig>(configuration.GetSection(nameof(ConsumerConfig)));
         
         return services;
     }
