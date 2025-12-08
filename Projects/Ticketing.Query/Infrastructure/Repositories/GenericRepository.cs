@@ -4,31 +4,38 @@ using Ticketing.Query.Infrastructure.Persistence;
 
 namespace Ticketing.Query.Infrastructure.Repositories;
 
-public class GenericRepository<T>(TicketDbContext context) : IGenericRepository<T> where T : class
+public class GenericRepository<T>: IGenericRepository<T> where T : class
 {
+    protected readonly TicketDbContext _context;
+
+    public GenericRepository(TicketDbContext context)
+    {
+        this._context = context;
+    }
+    
     public async Task<IReadOnlyList<T>> GetAllAsync()
     {
-        return await context.Set<T>().ToListAsync();
+        return await _context.Set<T>().ToListAsync();
     }
 
     public async Task<T?> GetByIdAsync(Guid id)
     {
-        return await context.Set<T>().FindAsync();
+        return await _context.Set<T>().FindAsync();
     }
 
     public void AddEntity(T entity)
     {
-        context.Set<T>().Add(entity);
+        _context.Set<T>().Add(entity);
     }
 
     public void UpdateEntity(T entity)
     {
-        context.Set<T>().Attach(entity);
-        context.Entry(entity).State = EntityState.Modified;
+        _context.Set<T>().Attach(entity);
+        _context.Entry(entity).State = EntityState.Modified;
     }
 
     public void DeleteEntity(T entity)
     {
-        context.Set<T>().Remove(entity);
+        _context.Set<T>().Remove(entity);
     }
 }

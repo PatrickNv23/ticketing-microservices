@@ -10,7 +10,7 @@ public class EventHandler(IMediator mediator) : IEventHandler
     public async Task On(TicketCreatedEvent @event)
     {
         // crear un command para colocar la data del mensaje del evento
-        var command = new TicketCreate.CreateTicketCommand
+        var command = new TicketCreate.TicketCreateCommand
         (
             @event.Id,
             @event.UserName,

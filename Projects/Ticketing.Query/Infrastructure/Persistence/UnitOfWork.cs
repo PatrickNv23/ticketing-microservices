@@ -1,6 +1,7 @@
 using System.Collections;
 using MediatR;
 using Ticketing.Query.Domain.Abstractions;
+using Ticketing.Query.Domain.Employees;
 using Ticketing.Query.Domain.Tickets;
 using Ticketing.Query.Infrastructure.Repositories;
 
@@ -13,6 +14,9 @@ public class UnitOfWork : IUnitOfWork
     private Hashtable _repositories = new(); // esto representa la sesión dentro del IUnitOfWork
     private DatabaseContextFactory _contextFactory;
     private readonly TicketDbContext _context;
+    private IEmployeeRepository? _employeeRepository;
+    
+    public IEmployeeRepository EmployeeRepository => _employeeRepository ??= new EmployeeRepository(_context);
 
     public UnitOfWork(DatabaseContextFactory contextFactory)
     {
