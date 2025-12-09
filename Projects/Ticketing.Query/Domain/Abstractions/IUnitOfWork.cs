@@ -6,5 +6,5 @@ public interface IUnitOfWork
 {
     IEmployeeRepository EmployeeRepository { get; }
     IGenericRepository<TEntity> RepositoryGeneric<TEntity>() where TEntity : class;
-    Task<int> CompleteAsync();
+    Task<int> Complete();
 }

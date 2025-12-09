@@ -1,6 +1,6 @@
 namespace Ticketing.Query.Domain.Abstractions;
 
-public class Entity(Guid id)
+public abstract class Entity(Guid id)
 {
     protected Entity() : this(default) // para instanciarse cualquier tipo de clase heredada
     {}

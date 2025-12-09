@@ -33,7 +33,7 @@ public sealed class TicketCreate
             unitOfWork.RepositoryGeneric<TicketEmployee>().AddEntity(ticketEmployee);
             
             // insertar a la BD y guardar cambios
-            await unitOfWork.CompleteAsync();
+            await unitOfWork.Complete();
 
             return Convert.ToString(ticket.Id)!;
         }

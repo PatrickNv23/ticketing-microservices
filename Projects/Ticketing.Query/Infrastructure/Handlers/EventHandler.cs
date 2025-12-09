@@ -5,19 +5,29 @@ using Ticketing.Query.Features.Tickets;
 
 namespace Ticketing.Query.Infrastructure.Handlers;
 
-public class EventHandler(IMediator mediator) : IEventHandler       
+public class EventHandler : IEventHandler
 {
+    private readonly IMediator _mediator;
+
+    public EventHandler(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
     public async Task On(TicketCreatedEvent @event)
     {
-        // crear un command para colocar la data del mensaje del evento
-        var command = new TicketCreate.TicketCreateCommand
-        (
+        var command = new TicketCreate.TicketCreateCommand(
             @event.Id,
             @event.UserName,
             @event.TypeError,
             @event.DetailError
         );
-        
-        await mediator.Send(command);
+
+        await _mediator.Send(command);
+    }
+
+    public Task On(TicketUpdatedEvent @event)
+    {
+        throw new NotImplementedException();
     }
 }

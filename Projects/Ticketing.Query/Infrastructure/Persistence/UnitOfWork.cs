@@ -12,7 +12,7 @@ public class UnitOfWork : IUnitOfWork
 {
     // debe existir una colección de repositorios
     private Hashtable _repositories = new(); // esto representa la sesión dentro del IUnitOfWork
-    private DatabaseContextFactory _contextFactory;
+    private readonly DatabaseContextFactory _contextFactory;
     private readonly TicketDbContext _context;
     private IEmployeeRepository? _employeeRepository;
     
@@ -49,7 +49,7 @@ public class UnitOfWork : IUnitOfWork
         return (IGenericRepository<TEntity>) _repositories[type]!; // devuelve ese repository que acabo de agregar.
     }
 
-    public async Task<int> CompleteAsync()
+    public async Task<int> Complete()
     {
         // confirmar cambios en memoria de EF y enviarlos a BD
         return await _context.SaveChangesAsync(); // devuelve el número de transacciones que se ejecutaron

@@ -7,5 +7,5 @@ public interface IEventHandler
 {
     // métodos genéricos
     Task On(TicketCreatedEvent @event);
-    // Task On(TicketUpdateEvent @event);
+    Task On(TicketUpdatedEvent @event);
 }
